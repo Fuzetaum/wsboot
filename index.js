@@ -3,12 +3,12 @@ const { ERROR_FATAL, LOG, WARNING } = require('./src/configuration/logs');
 const SYSTEM_DEFAULT = require('./src/configuration/defaults');
 
 const express = require('express');
-const bodyParser = require('body-parser');
 let app;
 
 const ROUTE_CB_WRAPPER = (req, res, cb) => {
+  console.log(req.body);
   LOG(`Request received: ${req.method} "${req.originalUrl}"\
-${Object.keys(req.body).length ? `, body=${req.body}` : ''}`);
+${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
   cb(req, res);
 };
 
@@ -37,16 +37,41 @@ const init = () => {
 
   LOG('Starting WSBoot web service');
   app = express();
-  app.use(express.json());
+
+  if (!wsbootConfig.bodyType) {
+    WARNING(`WSBoot configuration "bodyType" not found. Using default "${SYSTEM_DEFAULT.bodyType}"`);
+    app.use(express.json());
+  } else switch (wsbootConfig.bodyType) {
+    case 'json':
+      LOG('Body parser configured for type "JSON"');
+      app.use(express.json());
+      break;
+    case 'raw':
+      LOG('Body parser configured for type "raw"');
+      app.use(express.raw());
+      break;
+    case 'text':
+      LOG('Body parser configured for type "text"');
+      app.use(express.text());
+      break;
+    case 'urlencoded':
+      LOG('Body parser configured for type "urlencoded"');
+      app.use(express.urlencoded());
+      break;
+    default:
+      WARNING('WSBoot configuration "bodyType" has invalid value. Only the following are acceptable: "json", "raw", "text" and "urlencoded".');
+      WARNING(`Using default value ${SYSTEM_DEFAULT.bodyType}`);
+      app.use(express.json());
+      break;
+  }
+
   app.listen(wsbootConfig.port || SYSTEM_DEFAULT.port);
   LOG(`WSBoot web service successfully started. Listening on port ${wsbootConfig.port || SYSTEM_DEFAULT.port}`);
 };
 
-const all = (route, cb) => {
-  app.all(route, (req, res) => {});
-};
+const all = (route, cb) => app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
 
-const expressDelete = (route, cb) => app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+const httpDelete = (route, cb) => app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
 
 const get = (route, cb) => app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
 
@@ -56,7 +81,7 @@ const put = (route, cb) => app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, re
 
 module.exports = {
   all,
-  delete: expressDelete,
+  delete: httpDelete,
   get,
   init,
   post,
