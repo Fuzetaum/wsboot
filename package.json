@@ -1,7 +1,7 @@
 {
   "name": "@ricardofuzeto/ws-boot",
   "description": "Web service boot library",
-  "version": "0.0.1",
+  "version": "0.0.1-1",
   "author": "Ricardo Fuzeto",
   "contributors": ["Ricardo Fuzeto <ricardofuzeto@gmail.com>"],
   "license": "MIT",
