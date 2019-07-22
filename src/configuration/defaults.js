@@ -1,4 +1,4 @@
 module.exports = {
-  port: 10000,
+  port: 4000,
   bodyType: 'json'
 };

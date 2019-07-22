@@ -1,72 +1,59 @@
-const { parsed } = require('dotenv').config();
-const { ERROR_FATAL, LOG, WARNING } = require('./src/configuration/logs');
+const { context, log } = require('@ricardofuzeto/ws-core');
 const SYSTEM_DEFAULT = require('./src/configuration/defaults');
+
+const { properties } = context;
 
 const express = require('express');
 let app;
 
 const ROUTE_CB_WRAPPER = (req, res, cb) => {
-  console.log(req.body);
-  LOG(`Request received: ${req.method} "${req.originalUrl}"\
+  log.LOG(`Request received: ${req.method} "${req.originalUrl}"\
 ${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
   cb(req, res);
 };
 
 const init = () => {
-  if (!parsed || !parsed.wsboot) {
-    ERROR_FATAL('Configuration object "wsboot" not found. Check your ".env" file.');
-    return;
+  const wsbootProperties = properties.get('boot');
+  if (!wsbootProperties) {
+    log.ERROR_FATAL('Configuration object "wsboot" not found. Check your ".env" file.');
+    process.exit(1);
+  }
+  if (!wsbootProperties.port) {
+    log.WARNING(`Configuration property "ws.boot.port" not found. Using default ${SYSTEM_DEFAULT.port}`);
   }
 
-  let wsbootConfig;
-  try {
-    wsbootConfig = JSON.parse(parsed.wsboot);
-  } catch (error) {
-    ERROR_FATAL(`Could not parse WSBoot configuration from ".env" file. Found error was ${error}`);
-    ERROR_FATAL('Please, check your ".env" file, and ensure configuration entry "wsboot" has a valid JSON syntax');
-    return;
-  }
-  if (!wsbootConfig) {
-    ERROR_FATAL('Could not load WSBoot configuration. Aborting system startup.');
-    return;
-  }
-
-  if (!wsbootConfig.port) {
-    WARNING(`WSBoot configuration "port" not found. Using default ${SYSTEM_DEFAULT.port}`);
-  }
-
-  LOG('Starting WSBoot web service');
+  log.LOG('Starting WSBoot web service');
   app = express();
 
-  if (!wsbootConfig.bodyType) {
-    WARNING(`WSBoot configuration "bodyType" not found. Using default "${SYSTEM_DEFAULT.bodyType}"`);
+  if (!wsbootProperties.bodyType) {
+    log.WARNING(`WSBoot configuration "bodyType" not found. Using default "${SYSTEM_DEFAULT.bodyType}"`);
     app.use(express.json());
-  } else switch (wsbootConfig.bodyType) {
+  } else switch (wsbootProperties.bodyType) {
     case 'json':
-      LOG('Body parser configured for type "JSON"');
+      log.LOG('Body parser configured for type "JSON"');
       app.use(express.json());
       break;
     case 'raw':
-      LOG('Body parser configured for type "raw"');
+      log.LOG('Body parser configured for type "raw"');
       app.use(express.raw());
       break;
     case 'text':
-      LOG('Body parser configured for type "text"');
+      log.LOG('Body parser configured for type "text"');
       app.use(express.text());
       break;
     case 'urlencoded':
-      LOG('Body parser configured for type "urlencoded"');
+      log.LOG('Body parser configured for type "urlencoded"');
       app.use(express.urlencoded());
       break;
     default:
-      WARNING('WSBoot configuration "bodyType" has invalid value. Only the following are acceptable: "json", "raw", "text" and "urlencoded".');
-      WARNING(`Using default value ${SYSTEM_DEFAULT.bodyType}`);
+      log.WARNING('WSBoot configuration "bodyType" has invalid value. Only the following are acceptable: "json", "raw", "text" and "urlencoded"');
+      log.WARNING(`Using default value ${SYSTEM_DEFAULT.bodyType}`);
       app.use(express.json());
       break;
   }
 
-  app.listen(wsbootConfig.port || SYSTEM_DEFAULT.port);
-  LOG(`WSBoot web service successfully started. Listening on port ${wsbootConfig.port || SYSTEM_DEFAULT.port}`);
+  app.listen(wsbootProperties.port || SYSTEM_DEFAULT.port);
+  log.LOG(`WSBoot web service successfully started. Listening on port ${wsbootProperties.port || SYSTEM_DEFAULT.port}`);
 };
 
 const all = (route, cb) => app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
