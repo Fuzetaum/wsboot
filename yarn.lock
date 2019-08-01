@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@ricardofuzeto/ws-core@0.0.1-3":
-  version "0.0.1-3"
-  resolved "https://registry.yarnpkg.com/@ricardofuzeto/ws-core/-/ws-core-0.0.1-3.tgz#5d7a59f97bb3834604090ebadb4629ba23618928"
-  integrity sha512-wpfd3Vn0SYau037ZnwgN5G1JHlcLW+NkFfKqWeO1B5a04AQ4Ibm7QopP26JP3YVSZq9LFZy/RL+V+H82k09BTQ==
+"@ricardofuzeto/ws-core@0.0.1-4":
+  version "0.0.1-4"
+  resolved "https://registry.yarnpkg.com/@ricardofuzeto/ws-core/-/ws-core-0.0.1-4.tgz#eaa12555703eaf0d9a6ac8f7ead7620207893c37"
+  integrity sha512-Tsbb5xgODjlsjYoon8NSoD8cgJUe9kgicZlX//knJikFZKxtYlExajrVoqbQ3bDuC1e4bGXpL4BeWWARfIo5hw==
   dependencies:
     chalk "2.4.2"
 
@@ -443,11 +443,6 @@ dot-prop@^4.1.0:
   integrity sha512-tUMXrxlExSW6U2EXiiKGSBVdYgtV8qlHL+C10TsW4PURY/ic+eaysnSkwB4kA/mBlCyy/IKDJ+Lc3wbWeaXtuQ==
   dependencies:
     is-obj "^1.0.0"
-
-dotenv@8.0.0:
-  version "8.0.0"
-  resolved "https://registry.yarnpkg.com/dotenv/-/dotenv-8.0.0.tgz#ed310c165b4e8a97bb745b0a9d99c31bda566440"
-  integrity sha512-30xVGqjLjiUOArT4+M5q9sYdvuR4riM6yK9wMcas9Vbp6zZa+ocC9dp6QoftuhTPhFAiLK/0C5Ni2nou/Bk8lg==
 
 duplexer3@^0.1.4:
   version "0.1.4"

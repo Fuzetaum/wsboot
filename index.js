@@ -15,18 +15,18 @@ ${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
 const init = () => {
   const wsbootProperties = properties.get('boot');
   if (!wsbootProperties) {
-    log.ERROR_FATAL('Configuration object "wsboot" not found. Check your ".env" file.');
+    log.ERROR_FATAL('Configuration object "boot" not found. Check your "application.json" file.');
     process.exit(1);
   }
   if (!wsbootProperties.port) {
-    log.WARNING(`Configuration property "ws.boot.port" not found. Using default ${SYSTEM_DEFAULT.port}`);
+    log.WARNING(`WSBoot configuration property "port" not found. Using default ${SYSTEM_DEFAULT.port}`);
   }
 
   log.LOG('Starting WSBoot web service');
   app = express();
 
   if (!wsbootProperties.bodyType) {
-    log.WARNING(`WSBoot configuration "bodyType" not found. Using default "${SYSTEM_DEFAULT.bodyType}"`);
+    log.WARNING(`WSBoot configuration property "bodyType" not found. Using default "${SYSTEM_DEFAULT.bodyType}"`);
     app.use(express.json());
   } else switch (wsbootProperties.bodyType) {
     case 'json':
