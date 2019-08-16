@@ -1,9 +1,11 @@
+const express = require('express');
+const cors = require('cors');
+
 const { context, log } = require('@ricardofuzeto/ws-core');
 const SYSTEM_DEFAULT = require('./src/configuration/defaults');
 
 const { properties } = context;
 
-const express = require('express');
 let app;
 
 const ROUTE_CB_WRAPPER = (req, res, cb) => {
@@ -52,6 +54,7 @@ const init = () => {
       break;
   }
 
+  app.use(cors());
   app.listen(wsbootProperties.port || SYSTEM_DEFAULT.port);
   log.LOG(`WSBoot web service successfully started. Listening on port ${wsbootProperties.port || SYSTEM_DEFAULT.port}`);
 };
