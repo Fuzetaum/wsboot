@@ -4,13 +4,20 @@ const cors = require('cors');
 const { context, log } = require('@ricardofuzeto/ws-core');
 const SYSTEM_DEFAULT = require('./src/configuration/defaults');
 
+const { paginated } = require('./src/expressRes');
+
 const { properties } = context;
+const DEFAULT_OPTIONS = {
+  paginated: false,
+  pageSize: 20,
+};
 
 let app;
 
-const ROUTE_CB_WRAPPER = (req, res, cb) => {
+const ROUTE_CB_WRAPPER = (req, res, cb, options) => {
   log.LOG(`Request received: ${req.method} "${req.originalUrl}"\
 ${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
+  res = options.paginated ? paginated(req, res, options.pageSize) : res;
   cb(req, res);
 };
 
@@ -59,15 +66,60 @@ const init = () => {
   log.LOG(`WSBoot web service successfully started. Listening on port ${wsbootProperties.port || SYSTEM_DEFAULT.port}`);
 };
 
-const all = (route, cb) => app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+function all(route) {
+  if (typeof arguments[1] === 'object') {
+    app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+};
 
-const httpDelete = (route, cb) => app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+function httpDelete(route) {
+  if (typeof arguments[1] === 'object') {
+    app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+};
 
-const get = (route, cb) => app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+function get(route) {
+  if (typeof arguments[1] === 'object') {
+    app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+};
 
-const post = (route, cb) => app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+function post(route) {
+  if (typeof arguments[1] === 'object') {
+    app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+};
 
-const put = (route, cb) => app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+function put(route) {
+  if (typeof arguments[1] === 'object') {
+    app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+};
 
 module.exports = {
   all,
