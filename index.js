@@ -99,6 +99,17 @@ function get(route) {
   }
 };
 
+function patch(route) {
+  if (typeof arguments[1] === 'object') {
+    app.patch(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
+      ...DEFAULT_OPTIONS,
+      ...arguments[1],
+    }));
+  } else {
+    app.patch(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
+  }
+}
+
 function post(route) {
   if (typeof arguments[1] === 'object') {
     app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
@@ -126,6 +137,7 @@ module.exports = {
   delete: httpDelete,
   get,
   init,
+  patch,
   post,
   put,
 };
