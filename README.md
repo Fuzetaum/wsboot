@@ -27,7 +27,8 @@ The following table shows all configuration fields that can be placed inside the
 | field | type | default | description |
 | ----- | :--: | :-----: | ----------- |
 | port | number | 4000 | Port that Express's application will listen to |
-| bodyType | string | "json" | Parser middleware type that will be applied to Express's request bodies. Accepted values: "json", "raw", "text" and "urlencoded".
+| bodyType | string | "json" | Parser middleware type that will be applied to Express's request bodies. Accepted values: "json", "raw", "text" and "urlencoded". |
+| cors | object | {} | CORS custom configuration to be applied to the Express application. For further information, see [CORS](https://www.npmjs.com/package/cors) |
 
 # Booting the server
 

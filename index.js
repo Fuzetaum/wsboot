@@ -21,7 +21,7 @@ ${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
   cb(req, res);
 };
 
-const init = (corsConfig = {}) => {
+const init = () => {
   const wsbootProperties = properties.get('boot');
   if (!wsbootProperties) {
     log.ERROR_FATAL('Configuration object "boot" not found. Check your "application.json" file.');
@@ -61,7 +61,13 @@ const init = (corsConfig = {}) => {
       break;
   }
 
-  app.use(cors(corsConfig));
+  if (!wsbootProperties.cors) {
+    log.WARNING(`WSBoot configuration "cors" not provided. Using default value "${JSON.stringify(SYSTEM_DEFAULT.cors)}".`);
+  } else {
+    log.LOG(`Using WSBoot "cors" configuration: ${JSON.stringify(wsbootProperties.cors)}`);
+  }
+  app.use(cors(wsbootProperties.cors || SYSTEM_DEFAULT.cors));
+
   app.listen(wsbootProperties.port || SYSTEM_DEFAULT.port);
   log.LOG(`WSBoot web server successfully started. Listening on port ${wsbootProperties.port || SYSTEM_DEFAULT.port}`);
 };
