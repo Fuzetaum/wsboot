@@ -4,20 +4,13 @@ const cors = require('cors');
 const { context, log } = require('@ricardofuzeto/ws-core');
 const SYSTEM_DEFAULT = require('./src/configuration/defaults');
 
-const { paginated } = require('./src/expressRes');
-
 const { properties } = context;
-const DEFAULT_OPTIONS = {
-  paginated: false,
-  pageSize: 20,
-};
 
 let app;
 
-const ROUTE_CB_WRAPPER = (req, res, cb, options) => {
+const ROUTE_CB_WRAPPER = (req, res, cb) => {
   log.LOG(`Request received: ${req.method} "${req.originalUrl}"\
 ${Object.keys(req.body).length ? `, body=${JSON.stringify(req.body)}` : ''}`);
-  res = options.paginated ? paginated(req, res, options.pageSize) : res;
   cb(req, res);
 };
 
@@ -27,7 +20,12 @@ const init = () => {
     log.ERROR_FATAL('Configuration object "boot" not found. Check your "application.json" file.');
     process.exit(1);
   }
-  if (!wsbootProperties.port) {
+
+  const parsedPort = wsbootProperties.port && (typeof wsbootProperties.port === 'string'
+    && wsbootProperties.port.includes('process.env')) ?
+      parseInt(process.env[wsbootProperties.port.replace('process.env.', '')])
+      : parseInt(wsbootProperties.port);
+  if (!parsedPort) {
     log.WARNING(`WSBoot configuration property "port" not found. Using default ${SYSTEM_DEFAULT.port}`);
   }
 
@@ -61,93 +59,48 @@ const init = () => {
       break;
   }
 
-  if (!wsbootProperties.cors) {
+  if (!wsbootProperties.cors || !Object.keys(wsbootProperties.cors).length) {
     log.WARNING(`WSBoot configuration "cors" not provided. Using default value "${JSON.stringify(SYSTEM_DEFAULT.cors)}".`);
   } else {
     log.LOG(`Using WSBoot "cors" configuration: ${JSON.stringify(wsbootProperties.cors)}`);
   }
-  app.use(cors(wsbootProperties.cors || SYSTEM_DEFAULT.cors));
+  app.use(cors(
+    (wsbootProperties.cors && Object.keys(wsbootProperties.cors).length) ?
+      wsbootProperties.cors : SYSTEM_DEFAULT.cors
+  ));
 
-  app.listen(wsbootProperties.port || SYSTEM_DEFAULT.port);
-  log.LOG(`WSBoot web server successfully started. Listening on port ${wsbootProperties.port || SYSTEM_DEFAULT.port}`);
+  app.listen(parsedPort || SYSTEM_DEFAULT.port);
+  log.LOG(`WSBoot web server successfully started. Listening on port ${parsedPort || SYSTEM_DEFAULT.port}`);
 };
 
-function all(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="ALL", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="ALL", route="${route}", configuration=default`);
-  }
+function all(route, cb) {
+  app.all(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="ALL", route="${route}"`);
 };
 
-function httpDelete(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="DELETE", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="DELETE", route="${route}", configuration=default`);
-  }
+function httpDelete(route, cb) {
+  app.delete(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="DELETE", route="${route}"`);
 };
 
-function get(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="GET", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="GET", route="${route}", configuration=default`);
-  }
+function get(route, cb) {
+  app.get(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="GET", route="${route}"`);
 };
 
-function patch(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="PATCH", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.patch(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.patch(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="PATCH", route="${route}", configuration=default`);
-  }
+function patch(route, cb) {
+  app.patch(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="PATCH", route="${route}"`);
 }
 
-function post(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="POST", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="POST", route="${route}", configuration=default`);
-  }
+function post(route, cb) {
+  app.post(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="POST", route="${route}"`);
 };
 
-function put(route) {
-  if (typeof arguments[1] === 'object') {
-    log.LOG(`Mapped route: method="PUT", route="${route}", configuration="${JSON.stringify(arguments[1])}"`);
-    app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[2], {
-      ...DEFAULT_OPTIONS,
-      ...arguments[1],
-    }));
-  } else {
-    app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, arguments[1], DEFAULT_OPTIONS));
-    log.LOG(`Mapped route: method="PUT", route="${route}", configuration=default`);
-  }
+function put(route, cb) {
+  app.put(route, (req, res) => ROUTE_CB_WRAPPER(req, res, cb));
+  log.LOG(`Mapped route: method="PUT", route="${route}"`);
 };
 
 module.exports = {
